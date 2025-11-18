@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reaction Light · Phone Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      text-align: center;
+      padding: 1rem 1rem 0.4rem;
+    }
+    h1 {
+      margin: 0.2rem 0;
+      font-size: 1.5rem;
+    }
+    p {
+      margin: 0.2rem 0;
+      opacity: 0.85;
+      font-size: 0.9rem;
+    }
+    a.back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      text-decoration: none;
+      opacity: 0.8;
+    }
+    a.back-link:hover {
+      opacity: 1;
+    }
+    #panel {
+      margin-top: 0.75rem;
+      width: min(420px, 92vw);
+      height: min(420px, 92vw);
+      border-radius: 26px;
+      border: 1px solid rgba(148, 163, 184, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.5rem;
+      box-sizing: border-box;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.95);
+      background: #111827;
+      touch-action: manipulation;
+    }
+    #panel.ready {
+      background: #b91c1c;
+    }
+    #panel.wait {
+      background: #7f1d1d;
+    }
+    #panel.go {
+      background: #16a34a;
+    }
+    #panel.too-soon {
+      background: #f97316;
+    }
+    #panel-text {
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+    #best {
+      font-weight: 600;
+    }
+    #stats {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      opacity: 0.9;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/games/phone/index.html" class="back-link">← Back to phone games</a>
+    <h1>Reaction Light</h1>
+    <p>Press “Start”, wait until green, then tap as fast as you can.</p>
+  </header>
+
+  <div id="panel" class="ready">
+    <div id="panel-text">
+      Tap here to start.
+    </div>
+  </div>
+
+  <div id="stats">
+    Last: <span id="last">-</span> ms · Best: <span id="best">-</span> ms
+  </div>
+
+  <script>
+    const panel = document.getElementById("panel");
+    const panelText = document.getElementById("panel-text");
+    const lastEl = document.getElementById("last");
+    const bestEl = document.getElementById("best");
+
+    let state = "idle"; // idle, waiting, readyToTap, result
+    let timeoutId = null;
+    let startTime = null;
+    let best = null;
+
+    function resetToIdle() {
+      state = "idle";
+      panel.className = "";
+      panel.classList.add("ready");
+      panelText.textContent = "Tap here to start.";
+    }
+
+    function startWaiting() {
+      state = "waiting";
+      panel.className = "";
+      panel.classList.add("wait");
+      panelText.textContent = "Wait for green...";
+      const delay = 1500 + Math.random() * 2500;
+      timeoutId = setTimeout(() => {
+        startReady();
+      }, delay);
+    }
+
+    function startReady() {
+      state = "readyToTap";
+      panel.className = "";
+      panel.classList.add("go");
+      panelText.textContent = "TAP!";
+      startTime = performance.now();
+    }
+
+    function tooSoon() {
+      state = "result";
+      panel.className = "";
+      panel.classList.add("too-soon");
+      panelText.textContent = "Too soon! Tap to try again.";
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    }
+
+    function registerTap() {
+      const now = performance.now();
+      const reaction = Math.round(now - startTime);
+      lastEl.textContent = reaction;
+      if (best === null || reaction < best) {
+        best = reaction;
+        bestEl.textContent = best;
+      }
+      state = "result";
+      panel.className = "";
+      panel.classList.add("ready");
+      panelText.textContent = "Nice! Tap to try again.";
+    }
+
+    panel.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      if (state === "idle" || state === "result") {
+        startWaiting();
+      } else if (state === "waiting") {
+        tooSoon();
+      } else if (state === "readyToTap") {
+        registerTap();
+      }
+    });
+
+    // initial
+    resetToIdle();
+  </script>
+</body>
+</html>

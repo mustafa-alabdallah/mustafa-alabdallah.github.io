@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Block Dodger · PC Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%, #000 100%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      padding: 1rem 1rem 0.5rem;
+    }
+    h1 {
+      margin: 0.2rem 0;
+      font-size: 1.6rem;
+    }
+    p {
+      margin: 0.1rem 0;
+      opacity: 0.85;
+      font-size: 0.9rem;
+    }
+    a.back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      text-decoration: none;
+      opacity: 0.8;
+    }
+    a.back-link:hover {
+      opacity: 1;
+    }
+    #game-container {
+      margin: 0.75rem auto 1.25rem;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.9);
+      background: #020617;
+    }
+    canvas {
+      display: block;
+      background: linear-gradient(to bottom, #020617, #030712, #020617);
+    }
+    #hud {
+      display: flex;
+      gap: 1.25rem;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+    .badge {
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+    }
+    #message {
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      opacity: 0.85;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/games/pc/index.html" class="back-link">← Back to PC games</a>
+    <h1>Block Dodger</h1>
+    <p>Move with ◀ ▶ or A / D. Avoid the falling blocks. Press Space to start / restart.</p>
+  </header>
+
+  <div id="game-container">
+    <canvas id="game" width="480" height="600"></canvas>
+  </div>
+  <div id="hud">
+    <div class="badge">Score: <span id="score">0</span></div>
+    <div class="badge">Best: <span id="best">0</span></div>
+    <div class="badge">Speed: <span id="speed">1.0x</span></div>
+  </div>
+  <div id="message">Press Space to start.</div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const scoreEl = document.getElementById("score");
+    const bestEl = document.getElementById("best");
+    const speedEl = document.getElementById("speed");
+    const messageEl = document.getElementById("message");
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const player = {
+      x: width / 2 - 20,
+      y: height - 60,
+      w: 40,
+      h: 16,
+      speed: 5
+    };
+
+    let keys = { left: false, right: false };
+    let blocks = [];
+    let score = 0;
+    let best = 0;
+    let running = false;
+    let lastTime = 0;
+    let spawnTimer = 0;
+    let spawnInterval = 900; // ms
+    let speedMultiplier = 1.0;
+
+    function resetGame() {
+      blocks = [];
+      score = 0;
+      spawnTimer = 0;
+      spawnInterval = 900;
+      speedMultiplier = 1.0;
+      player.x = width / 2 - player.w / 2;
+      running = true;
+      lastTime = performance.now();
+      messageEl.textContent = "";
+      scoreEl.textContent = "0";
+      speedEl.textContent = speedMultiplier.toFixed(1) + "x";
+    }
+
+    function spawnBlock() {
+      const w = 40 + Math.random() * 40;
+      const x = Math.random() * (width - w);
+      const speed = 2.0 * speedMultiplier + Math.random() * (1.5 * speedMultiplier);
+      blocks.push({
+        x,
+        y: -30,
+        w,
+        h: 14,
+        speed
+      });
+    }
+
+    function update(dt) {
+      // player movement
+      if (keys.left) player.x -= player.speed;
+      if (keys.right) player.x += player.speed;
+
+      player.x = Math.max(0, Math.min(width - player.w, player.x));
+
+      // spawn blocks
+      spawnTimer += dt;
+      if (spawnTimer >= spawnInterval) {
+        spawnTimer = 0;
+        spawnBlock();
+        // gradually increase difficulty
+        if (spawnInterval > 400) spawnInterval -= 8;
+        speedMultiplier += 0.02;
+        speedEl.textContent = speedMultiplier.toFixed(1) + "x";
+      }
+
+      // move blocks
+      for (const b of blocks) {
+        b.y += b.speed;
+      }
+
+      // remove off-screen blocks + update score
+      blocks = blocks.filter(b => {
+        if (b.y > height + 40) {
+          score += 1;
+          scoreEl.textContent = score;
+          if (score > best) {
+            best = score;
+            bestEl.textContent = best;
+          }
+          return false;
+        }
+        return true;
+      });
+
+      // collisions
+      for (const b of blocks) {
+        if (
+          b.x < player.x + player.w &&
+          b.x + b.w > player.x &&
+          b.y < player.y + player.h &&
+          b.y + b.h > player.y
+        ) {
+          running = false;
+          messageEl.textContent = "Game over! Press Space to try again.";
+          break;
+        }
+      }
+    }
+
+    function drawBackground() {
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, "#020617");
+      gradient.addColorStop(0.5, "#111827");
+      gradient.addColorStop(1, "#020617");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawPlayer() {
+      const g = ctx.createLinearGradient(player.x, player.y, player.x, player.y + player.h);
+      g.addColorStop(0, "#facc15");
+      g.addColorStop(1, "#f59e0b");
+      ctx.fillStyle = g;
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+    }
+
+    function drawBlocks() {
+      for (const b of blocks) {
+        const g = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+        g.addColorStop(0, "#38bdf8");
+        g.addColorStop(1, "#0ea5e9");
+        ctx.fillStyle = g;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+      }
+    }
+
+    function loop(timestamp) {
+      const dt = timestamp - lastTime;
+      lastTime = timestamp;
+
+      if (running) {
+        update(dt);
+      }
+
+      drawBackground();
+      drawPlayer();
+      drawBlocks();
+
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(time => {
+      lastTime = time;
+      loop(time);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "ArrowLeft" || e.code === "KeyA") keys.left = true;
+      if (e.code === "ArrowRight" || e.code === "KeyD") keys.right = true;
+      if (e.code === "Space") {
+        if (!running) {
+          resetGame();
+        }
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      if (e.code === "ArrowLeft" || e.code === "KeyA") keys.left = false;
+      if (e.code === "ArrowRight" || e.code === "KeyD") keys.right = false;
+    });
+
+    // show initial screen
+    drawBackground();
+    drawPlayer();
+    drawBlocks();
+  </script>
+</body>
+</html>

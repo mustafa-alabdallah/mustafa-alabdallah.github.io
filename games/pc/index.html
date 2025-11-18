@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PC Games · Keyboard Only</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1.5rem 1.5rem 0.75rem;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.8rem;
+    }
+    header p {
+      margin: 0;
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+    main {
+      flex: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+    .card {
+      border-radius: 18px;
+      padding: 1.2rem 1.4rem;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.75);
+    }
+    .card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.15rem;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      opacity: 0.9;
+    }
+    .card p {
+      margin: 0.35rem 0 0.7rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      opacity: 0.9;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      text-decoration: none;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+      gap: 0.4rem;
+    }
+    .btn span.icon {
+      font-size: 0.95rem;
+    }
+    a.back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      text-decoration: none;
+      opacity: 0.8;
+    }
+    a.back-link:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/games/index.html" class="back-link">← Back to games</a>
+    <h1>PC Games</h1>
+    <p>Games that expect a keyboard. Best on desktop or laptop (computer lab friendly).</p>
+  </header>
+  <main>
+    <section class="grid">
+      <article class="card">
+        <div class="tag-row">
+          <span class="tag">Existing</span>
+          <span class="tag">Keyboard</span>
+          <span class="tag">Arrow keys / A &amp; D</span>
+        </div>
+        <h2>Cat &amp; Rocket</h2>
+        <p>
+          The original mini‑game from the main page. Move left and right and dodge the falling rockets.
+        </p>
+        <a class="btn" href="/game/index.html">
+          Play Cat &amp; Rocket
+          <span class="icon">🚀</span>
+        </a>
+      </article>
+
+      <article class="card">
+        <div class="tag-row">
+          <span class="tag">New</span>
+          <span class="tag">Keyboard</span>
+          <span class="tag">Arrow keys / A &amp; D</span>
+        </div>
+        <h2>Block Dodger</h2>
+        <p>
+          Move your square left and right and survive as long as possible while blocks fall faster and faster.
+        </p>
+        <a class="btn" href="/games/pc/block-dodger.html">
+          Play Block Dodger
+          <span class="icon">🧱</span>
+        </a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
